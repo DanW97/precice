@@ -2,6 +2,9 @@
 #include <cstddef>
 #include <iostream>
 #include <memory>
+#ifndef PRECICE_NO_MPI
+#include <mpi.h>
+#endif
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -51,6 +54,40 @@ try {
       precice::impl::strippedStringView(configFileName, configFileNameLength),
       *solverProcessIndex,
       *solverProcessSize);
+} catch (::precice::Error &e) {
+  std::abort();
+}
+
+void precicef_create_with_communicator_(
+    const char *participantName,
+    const char *configFileName,
+    const int  *solverProcessIndex,
+    const int  *solverProcessSize,
+    const int  *communicator,
+    int         participantNameLength,
+    int         configFileNameLength)
+try {
+#ifndef PRECICE_NO_MPI
+  // MPI_Comm_f2c requires an MPI_Fint argument, which may differ from int.
+  // However, the Fortran standard guarantees interoperability of the int type,
+  // so that is what is passed. Do the conversion in case int is not identical
+  // to MPI_Fint.
+  MPI_Fint f_communicator = static_cast<MPI_Fint>(*communicator);
+  auto     c_communicator = MPI_Comm_f2c(f_communicator);
+  impl                    = std::make_unique<precice::Participant>(
+      precice::impl::strippedStringView(participantName, participantNameLength),
+      precice::impl::strippedStringView(configFileName, configFileNameLength),
+      *solverProcessIndex,
+      *solverProcessSize,
+      &c_communicator);
+#else
+  PRECICE_WARN("preCICE was configured without MPI but you passed an MPI communicator. preCICE ignores the communicator and continues.");
+  impl = std::make_unique<precice::Participant>(
+      precice::impl::strippedStringView(participantName, participantNameLength),
+      precice::impl::strippedStringView(configFileName, configFileNameLength),
+      *solverProcessIndex,
+      *solverProcessSize);
+#endif
 } catch (::precice::Error &e) {
   std::abort();
 }
@@ -192,7 +229,7 @@ try {
   std::abort();
 }
 
-void precicef_set_vertex_(
+void precicef_set_mesh_vertex_(
     const char   *meshName,
     const double *position,
     int          *vertexID,
@@ -217,7 +254,7 @@ try {
   std::abort();
 }
 
-void precicef_set_vertices_(
+void precicef_set_mesh_vertices_(
     const char *meshName,
     const int  *size,
     double     *coordinates,
@@ -232,7 +269,7 @@ try {
   std::abort();
 }
 
-void precicef_set_edge_(
+void precicef_set_mesh_edge_(
     const char *meshName,
     const int  *firstVertexID,
     const int  *secondVertexID,
@@ -257,7 +294,7 @@ try {
   std::abort();
 }
 
-void precicef_set_triangle_(
+void precicef_set_mesh_triangle_(
     const char *meshName,
     const int  *firstVertexID,
     const int  *secondVertexID,
@@ -283,7 +320,7 @@ try {
   std::abort();
 }
 
-void precicef_set_quad_(
+void precicef_set_mesh_quad_(
     const char *meshName,
     const int  *firstVertexID,
     const int  *secondVertexID,
@@ -310,7 +347,7 @@ try {
   std::abort();
 }
 
-void precicef_set_tetrahedron(
+void precicef_set_mesh_tetrahedron_(
     const char *meshName,
     const int  *firstVertexID,
     const int  *secondVertexID,
@@ -506,15 +543,15 @@ try {
 
 void precicef_get_mesh_vertex_ids_and_coordinates_(
     const char *meshName,
-    const int   size,
+    const int  *size,
     int        *ids,
     double     *coordinates,
     int         meshNameLength)
 try {
   PRECICE_CHECK(impl != nullptr, errormsg);
   auto sv              = precice::impl::strippedStringView(meshName, meshNameLength);
-  auto coordinatesSize = static_cast<unsigned long>(impl->getMeshDimensions(sv) * size);
-  impl->getMeshVertexIDsAndCoordinates(sv, {ids, static_cast<unsigned long>(size)}, {coordinates, coordinatesSize});
+  auto coordinatesSize = static_cast<unsigned long>(impl->getMeshDimensions(sv) * *size);
+  impl->getMeshVertexIDsAndCoordinates(sv, {ids, static_cast<unsigned long>(*size)}, {coordinates, coordinatesSize});
 } catch (::precice::Error &e) {
   std::abort();
 }
@@ -536,6 +573,68 @@ try {
   impl->stopLastProfilingSection();
 } catch (::precice::Error &e) {
   std::abort();
+}
+
+// Deprecated wrappers for backward compatibility
+
+void precicef_set_vertex_(
+    const char   *meshName,
+    const double *coordinates,
+    int          *id,
+    int           meshNameLength)
+{
+  precicef_set_mesh_vertex_(meshName, coordinates, id, meshNameLength);
+}
+
+void precicef_set_edge_(
+    const char *meshName,
+    const int  *firstVertexID,
+    const int  *secondVertexID,
+    int         meshNameLength)
+{
+  precicef_set_mesh_edge_(meshName, firstVertexID, secondVertexID, meshNameLength);
+}
+
+void precicef_set_triangle_(
+    const char *meshName,
+    const int  *firstVertexID,
+    const int  *secondVertexID,
+    const int  *thirdVertexID,
+    int         meshNameLength)
+{
+  precicef_set_mesh_triangle_(meshName, firstVertexID, secondVertexID, thirdVertexID, meshNameLength);
+}
+
+void precicef_set_quad_(
+    const char *meshName,
+    const int  *firstVertexID,
+    const int  *secondVertexID,
+    const int  *thirdVertexID,
+    const int  *fourthVertexID,
+    int         meshNameLength)
+{
+  precicef_set_mesh_quad_(meshName, firstVertexID, secondVertexID, thirdVertexID, fourthVertexID, meshNameLength);
+}
+
+void precicef_set_tetrahedron(
+    const char *meshName,
+    const int  *firstVertexID,
+    const int  *secondVertexID,
+    const int  *thirdVertexID,
+    const int  *fourthVertexID,
+    int         meshNameLength)
+{
+  precicef_set_mesh_tetrahedron_(meshName, firstVertexID, secondVertexID, thirdVertexID, fourthVertexID, meshNameLength);
+}
+
+void precicef_set_vertices_(
+    const char *meshName,
+    const int  *size,
+    double     *coordinates,
+    int        *ids,
+    int         meshNameLength)
+{
+  precicef_set_mesh_vertices_(meshName, size, coordinates, ids, meshNameLength);
 }
 
 #ifdef __GNUC__

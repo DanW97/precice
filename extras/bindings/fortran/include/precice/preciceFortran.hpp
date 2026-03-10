@@ -40,6 +40,31 @@ PRECICE_API void precicef_create_(
     int         participantNameLength,
     int         configFileNameLength);
 
+/**
+ * Fortran syntax:
+ * precicef_create_with_communicator_(
+ *   CHARACTER participantName(*),
+ *   CHARACTER configFileName(*),
+ *   INTEGER   solverProcessIndex,
+ *   INTEGER   solverProcessSize,
+ *   INTEGER   communicator )
+ *
+ * IN:  participantName, configFileName, solverProcessIndex, solverProcessSize,
+ *      communicator
+ * OUT: -
+ *
+ * @copydoc precice::Participant::Participant()
+ *
+ */
+PRECICE_API void precicef_create_with_communicator_(
+    const char *participantName,
+    const char *configFileName,
+    const int  *solverProcessIndex,
+    const int  *solverProcessSize,
+    const int  *communicator,
+    int         participantNameLength,
+    int         configFileNameLength);
+
 ///@}
 
 /// @name Steering Methods
@@ -224,7 +249,7 @@ PRECICE_API void precicef_reset_mesh_(
 
 /**
  * Fortran syntax:
- * precicef_set_vertex(
+ * precicef_set_mesh_vertex(
  *   CHARACTER        meshName(*),
  *   DOUBLE PRECISION coordinates(dim),
  *   INTEGER          id )
@@ -234,6 +259,16 @@ PRECICE_API void precicef_reset_mesh_(
  *
  * @copydoc precice::Participant::setMeshVertex()
  *
+ */
+PRECICE_API void precicef_set_mesh_vertex_(
+    const char   *meshName,
+    const double *coordinates,
+    int          *id,
+    int           meshNameLength);
+
+/**
+ * @brief @deprecated Use precicef_set_mesh_vertex_() instead.
+ * @see precicef_set_mesh_vertex_
  */
 PRECICE_API void precicef_set_vertex_(
     const char   *meshName,
@@ -260,7 +295,7 @@ PRECICE_API void precicef_get_mesh_vertex_size_(
 
 /**
  * Fortran syntax:
- * precicef_set_vertices(
+ * precicef_set_mesh_vertices_(
  *   CHARACTER        meshName(*),
  *   INTEGER          size,
  *   DOUBLE PRECISION coordinates(dim*size),
@@ -272,6 +307,17 @@ PRECICE_API void precicef_get_mesh_vertex_size_(
  * @copydoc precice::Participant::setMeshVertices()
  *
  */
+PRECICE_API void precicef_set_mesh_vertices_(
+    const char *meshName,
+    const int  *size,
+    double     *coordinates,
+    int        *ids,
+    int         meshNameLength);
+
+/**
+ * @brief @deprecated Use precicef_set_mesh_vertices_() instead.
+ * @see precicef_set_mesh_vertices_
+ */
 PRECICE_API void precicef_set_vertices_(
     const char *meshName,
     const int  *size,
@@ -281,7 +327,7 @@ PRECICE_API void precicef_set_vertices_(
 
 /**
  * Fortran syntax:
- * precicef_set_edge(
+ * precicef_set_mesh_edge_(
  *   CHARACTER meshName(*),
  *   INTEGER firstVertexID,
  *   INTEGER secondVertexID )
@@ -291,6 +337,16 @@ PRECICE_API void precicef_set_vertices_(
  *
  * @copydoc precice::Participant::setMeshEdge()
  *
+ */
+PRECICE_API void precicef_set_mesh_edge_(
+    const char *meshName,
+    const int  *firstVertexID,
+    const int  *secondVertexID,
+    int         meshNameLength);
+
+/**
+ * @brief @deprecated Use precicef_set_mesh_edge_() instead.
+ * @see precicef_set_mesh_edge_
  */
 PRECICE_API void precicef_set_edge_(
     const char *meshName,
@@ -319,7 +375,7 @@ PRECICE_API void precicef_set_mesh_edges_(
 
 /**
  * Fortran syntax:
- * precicef_set_triangle_(
+ * precicef_set_mesh_triangle_(
  *   CHARACTER meshName(*),
  *   INTEGER firstVertexID,
  *   INTEGER secondVertexID,
@@ -330,6 +386,17 @@ PRECICE_API void precicef_set_mesh_edges_(
  *
  * @copydoc precice::Participant::setMeshTriangle()
  *
+ */
+PRECICE_API void precicef_set_mesh_triangle_(
+    const char *meshName,
+    const int  *firstVertexID,
+    const int  *secondVertexID,
+    const int  *thirdVertexID,
+    int         meshNameLength);
+
+/**
+ * @brief @deprecated Use precicef_set_mesh_triangle_() instead.
+ * @see precicef_set_mesh_triangle_
  */
 PRECICE_API void precicef_set_triangle_(
     const char *meshName,
@@ -351,7 +418,7 @@ PRECICE_API void precicef_set_triangle_(
  * @copydoc precice::Participant::setMeshTriangles()
  *
  */
-PRECICE_API void precicef_set_mesh_edges_(
+PRECICE_API void precicef_set_mesh_triangles_(
     const char *meshName,
     const int  *size,
     const int  *ids,
@@ -359,7 +426,7 @@ PRECICE_API void precicef_set_mesh_edges_(
 
 /**
  * Fortran syntax:
- * precicef_set_quad_(
+ * precicef_set_mesh_quad_(
  *   CHARACTER meshName(*),
  *   INTEGER firstVertexID,
  *   INTEGER secondVertexID,
@@ -372,6 +439,18 @@ PRECICE_API void precicef_set_mesh_edges_(
  * @copydoc precice::Participant::setMeshQuad()
  *
  */
+PRECICE_API void precicef_set_mesh_quad_(
+    const char *meshName,
+    const int  *firstVertexID,
+    const int  *secondVertexID,
+    const int  *thirdVertexID,
+    const int  *fourthVertexID,
+    int         meshNameLength);
+
+/**
+ * @brief @deprecated Use precicef_set_mesh_quad_() instead.
+ * @see precicef_set_mesh_quad_
+ */
 PRECICE_API void precicef_set_quad_(
     const char *meshName,
     const int  *firstVertexID,
@@ -382,7 +461,7 @@ PRECICE_API void precicef_set_quad_(
 
 /**
  * Fortran syntax:
- * precicef_set_mesh_quads(
+ * precicef_set_mesh_quads_(
  *   CHARACTER meshName(*),
  *   INTEGER size,
  *   INTEGER ids(size*4) )
@@ -401,7 +480,7 @@ PRECICE_API void precicef_set_mesh_quads_(
 
 /**
  * Fortran syntax:
- * precicef_set_tetrahedron(
+ * precicef_set_mesh_tetrahedron_(
  *   CHARACTER meshName(*),
  *   INTEGER firstVertexID,
  *   INTEGER secondVertexID,
@@ -413,6 +492,18 @@ PRECICE_API void precicef_set_mesh_quads_(
  *
  * @copydoc precice::Participant::setMeshTetrahedron()
  *
+ */
+PRECICE_API void precicef_set_mesh_tetrahedron_(
+    const char *meshName,
+    const int  *firstVertexID,
+    const int  *secondVertexID,
+    const int  *thirdVertexID,
+    const int  *fourthVertexID,
+    int         meshNameLength);
+
+/**
+ * @brief @deprecated Use precicef_set_mesh_tetrahedron_() instead.
+ * @see precicef_set_mesh_tetrahedron_
  */
 PRECICE_API void precicef_set_tetrahedron(
     const char *meshName,
@@ -608,7 +699,7 @@ PRECICE_API void precicef_set_mesh_access_region_(
  */
 PRECICE_API void precicef_get_mesh_vertex_ids_and_coordinates_(
     const char *meshName,
-    const int   size,
+    const int  *size,
     int        *ids,
     double     *coordinates,
     int         meshNameLength);
